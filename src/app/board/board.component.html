@@ -1,0 +1,11 @@
+<br>
+<button mat-stroked-button color="warn" (click)="newGame()">Start new Game</button>
+
+<main>
+    <app-square
+        *ngFor="let val of squares; let i = index"
+        [value]="val"
+        [currentPlayer]="this.player"
+        (click)="makeMove(i)">
+    </app-square>
+</main>
