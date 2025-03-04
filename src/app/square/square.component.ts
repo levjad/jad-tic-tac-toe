@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-square',
-  template: `
+    selector: 'app-square',
+    template: `
     <button mat-flat-button *ngIf="!value">
       {{ value }}
       <span class="hide">{{ currentPlayer }}</span>
@@ -14,11 +14,12 @@ import { Component, Input } from '@angular/core';
       {{ value }}
     </button>
   `,
-  styles: [
-    'button { width: 100% !important; height: 100% !important; font-size: 5em !important; }',
-    '.hide { display: none }',
-    'button:hover .hide { display: block; color: white}'
-  ],
+    styles: [
+        'button { width: 100% !important; height: 100% !important; font-size: 5em !important; }',
+        '.hide { display: none }',
+        'button:hover .hide { display: block; color: white}'
+    ],
+    standalone: false
 })
 export class SquareComponent {
   @Input()
