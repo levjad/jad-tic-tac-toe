@@ -6,20 +6,20 @@ import { SquareComponent } from './square/square.component';
 import { BoardComponent } from './board/board.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import {SvgXComponent} from "./components/x.component";
+import {SvgOComponent} from "./components/o.component";
 
 @NgModule({
   declarations: [
     AppComponent,
     SquareComponent,
-    BoardComponent
+    BoardComponent,
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    MatButtonModule,
-    MatSnackBarModule,
+    SvgXComponent,
+    SvgOComponent,
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,20 +1,77 @@
-import { Component, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {Component, OnInit, signal} from '@angular/core';
 
 @Component({
-    selector: 'app-board',
-    templateUrl: './board.component.html',
-    styleUrls: ['./board.component.scss'],
+    selector: 'jad-board',
+    template: `
+      <section class="flex items-center mt-6">
+        <div class="flex gap-1">
+          <svg-x [width]="20" [height]="20" />
+          <svg-o [width]="20" [height]="20" />
+        </div>
+
+        <button class="btn btn-soft btn-sm">
+          @if(this.player === 'x') {
+            <svg-x [strokeColor]="'stroke-gray-500'" [width]="15" [height]="15" />
+          } @else {
+            <svg-o [strokeColor]="'stroke-gray-500'" [width]="15" [height]="15" />
+          }
+          <span class="font-semibold text-xs">TURN</span>
+        </button>
+        <span class="flex justify-end">
+            <button class="btn btn-soft bg-gray-300 text-base-100 hover:bg-gray-400 btn-sm w-4 px-4" (click)="newGame()">&#8635;</button>
+        </span>
+      </section>
+      <main class="max-w-lg">
+        @for(val of squares; track idx; let idx = $index) {
+          <jad-square
+            [value]="val"
+            [currentPlayer]="this.player"
+            (click)="makeMove(idx)">
+          </jad-square>
+        }
+      </main>
+      @let winner = this.playerWon();
+      @if (!!winner) {
+        <div>
+          <div role="alert" class="alert">
+            <span class="flex gap-2 justify-center items-center">
+                @if(winner === 'x') {
+                  <svg-x [width]="15" [height]="15" />
+                } @else {
+                  <svg-o [width]="15" [height]="15" />
+                }
+              <span class="font-semibold text-xs">won the game!</span>
+            </span>
+            <div>
+              <button class="btn btn-soft bg-gray-300 text-base-100 hover:bg-gray-400 btn-sm w-4 px-4" (click)="newGame()">&#8635;</button>
+            </div>
+          </div>
+        </div>
+      }
+    `,
+    styles: `
+      main, section {
+        display: grid;
+        grid-template-columns: 8rem 8rem 8rem;
+        grid-gap: .5rem;
+      }
+
+      jad-square {
+        border: 1px transparent solid;
+        height: 8rem;
+      }
+    `,
     standalone: false
 })
 
 export class BoardComponent implements OnInit {
+  playerWon = signal<string | null>(null);
   squares: string[] | undefined;
   xIsNext: boolean | undefined;
   isBoardDisabled = false;
   snackbarRef: any;
 
-  constructor(private _snackBar: MatSnackBar) {}
+  constructor() {}
 
   ngOnInit() {
     this.newGame();
@@ -23,12 +80,12 @@ export class BoardComponent implements OnInit {
   newGame() {
     this.squares = Array(9).fill(null);
     this.xIsNext = true;
-    this.snackbarRef && this.snackbarRef.dismiss();
     this.isBoardDisabled = false;
+    this.playerWon.set(null);
   }
 
   get player() {
-    return this.xIsNext ? 'X' : 'O';
+    return this.xIsNext ? 'x' : 'o';
   }
 
   makeMove(idx: number) {
@@ -65,10 +122,7 @@ export class BoardComponent implements OnInit {
         this.squares[a] === this.squares[b] &&
         this.squares[a] === this.squares[c]
       ) {
-        this.snackbarRef = this._snackBar.open(
-          `Player ${this.squares[a]} won the game!`,
-          'OK'
-        );
+        this.playerWon.set(this.squares[a]);
         this.isBoardDisabled = true;
       }
     }
