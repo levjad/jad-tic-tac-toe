@@ -69,7 +69,6 @@ export class BoardComponent implements OnInit {
   squares: string[] | undefined;
   xIsNext: boolean | undefined;
   isBoardDisabled = false;
-  snackbarRef: any;
 
   constructor() {}
 
