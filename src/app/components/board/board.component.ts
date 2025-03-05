@@ -6,24 +6,25 @@ import {AiOpponent} from "../ai/ai-opponent";
     template: `
       <section class="flex items-center mt-6">
         <div class="flex gap-1">
-          <svg-x [width]="20" [height]="20" />
-          <svg-o [width]="20" [height]="20" />
+          <svg-x [width]="20" [height]="20"/>
+          <svg-o [width]="20" [height]="20"/>
         </div>
 
         <button class="btn btn-soft btn-sm">
-          @if(this.player === 'x') {
-            <svg-x [strokeColor]="'stroke-gray-500'" [width]="15" [height]="15" />
+          @if (this.player === 'x') {
+            <svg-x [strokeColor]="'stroke-gray-500'" [width]="15" [height]="15"/>
           } @else {
-            <svg-o [strokeColor]="'stroke-gray-500'" [width]="15" [height]="15" />
+            <svg-o [strokeColor]="'stroke-gray-500'" [width]="15" [height]="15"/>
           }
           <span class="font-semibold text-xs">TURN</span>
         </button>
         <span class="flex justify-end">
-            <button class="btn btn-soft bg-gray-300 text-base-100 hover:bg-gray-400 btn-sm w-4 px-4" (click)="newGame()">&#8635;</button>
+            <button class="btn btn-soft bg-gray-300 text-base-100 hover:bg-gray-400 btn-sm w-4 px-4"
+                    (click)="newGame()">&#8635;</button>
         </span>
       </section>
       <main class="max-w-lg">
-        @for(val of squares; track idx; let idx = $index) {
+        @for (val of squares; track idx; let idx = $index) {
           <jad-square
             [value]="val"
             [currentPlayer]="this.player"
@@ -31,20 +32,47 @@ import {AiOpponent} from "../ai/ai-opponent";
           </jad-square>
         }
       </main>
-      @let winner = this.playerWon();
+      <section class="mt-2">
+        <div class="card bg-accent text-base-100 card-xs justify-center">
+          <div class="flex flex-col justify-center items-center p-2">
+            <h1 class="text-xs font-semibold">X (PLAYER)</h1>
+            <p class="font-bold">{{ playerWon() }}</p>
+          </div>
+        </div>
+        <div class="card bg-gray-300 text-base-100 card-xs justify-center">
+          <div class="flex flex-col p-2 justify-center items-center">
+            <h1 class="text-xs font-semibold">TIES</h1>
+            <p class="font-bold">{{ ties() }}</p>
+          </div>
+        </div>
+        <div class="card bg-warning text-base-100 card-xs justify-center">
+          <div class="flex flex-col p-2 justify-center items-center">
+            <h1 class="text-xs font-semibold">O (CPU)</h1>
+            <p class="font-bold">{{ cpuWon() }}</p>
+          </div>
+        </div>
+      </section>
+      @let winner = this.winner();
       @if (!!winner) {
         <div>
           <div role="alert" class="alert">
             <span class="flex gap-2 justify-center items-center">
-                @if(winner === 'x') {
-                  <svg-x [width]="15" [height]="15" />
-                } @else {
-                  <svg-o [width]="15" [height]="15" />
+                @if (winner === 'x') {
+                  <svg-x [width]="15" [height]="15"/>
+                  <span class="font-semibold text-xs">won the game!</span>
                 }
-              <span class="font-semibold text-xs">won the game!</span>
+                @if(winner === 'o') {
+                  <svg-o [width]="15" [height]="15"/>
+                  <span class="font-semibold text-xs">won the game!</span>
+                }
+                @if(winner === 'draw') {
+                  <span class="font-semibold text-xs">Draw!</span>
+                }
             </span>
             <div>
-              <button class="btn btn-soft bg-gray-300 text-base-100 hover:bg-gray-400 btn-sm w-4 px-4" (click)="newGame()">&#8635;</button>
+              <button class="btn btn-soft bg-gray-300 text-base-100 hover:bg-gray-400 btn-sm w-4 px-4"
+                      (click)="newGame()">&#8635;
+              </button>
             </div>
           </div>
         </div>
@@ -66,7 +94,10 @@ import {AiOpponent} from "../ai/ai-opponent";
 })
 
 export class BoardComponent implements OnInit {
-  playerWon = signal<string | null>(null);
+  winner = signal<string | null>(null);
+  playerWon = signal<number>(0);
+  ties = signal<number>(0);
+  cpuWon = signal<number>(0);
   squares: string[] | undefined;
   xIsNext: boolean | undefined;
   isBoardDisabled = false;
@@ -82,10 +113,22 @@ export class BoardComponent implements OnInit {
   }
 
   newGame() {
+    if (this.winner()) {
+      switch (this.winner()) {
+        case 'x':
+          this.playerWon.update(value => value + 1);
+          break;
+        case 'o':
+          this.cpuWon.update(value => value + 1);
+          break;
+        case 'draw':
+          this.ties.update(value => value + 1);
+      }
+    }
     this.squares = Array(9).fill(null);
     this.xIsNext = true;
     this.isBoardDisabled = false;
-    this.playerWon.set(null);
+    this.winner.set(null);
   }
 
   get player() {
@@ -104,7 +147,7 @@ export class BoardComponent implements OnInit {
 
     this.calculateWinner();
     if (!this.isBoardDisabled && this.player === 'o') {
-      setTimeout(() => this.aiMove(), 500);
+      setTimeout(() => this.aiMove(), 200);
     }
   }
 
@@ -138,11 +181,18 @@ export class BoardComponent implements OnInit {
         this.squares[a] === this.squares[b] &&
         this.squares[a] === this.squares[c]
       ) {
-        this.playerWon.set(this.squares[a]);
+        this.winner.set(this.squares[a]);
         this.isBoardDisabled = true;
         return this.squares[a];
       }
     }
+
+    if (this.squares && this.squares.every(square => square !== null)) {
+      this.winner.set('draw');
+      this.isBoardDisabled = true;
+      return 'draw';
+    }
+
     return null;
   }
 }

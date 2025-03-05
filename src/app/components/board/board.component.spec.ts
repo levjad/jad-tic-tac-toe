@@ -1,27 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BoardComponent } from './board.component';
-import { Component } from '@angular/core';
-import {SvgOComponent} from "../o.component";
-import {SvgXComponent} from "../x.component";
+import { AiOpponent } from '../ai/ai-opponent';
 import {SquareComponent} from "../square/square.component";
-
-@Component({ selector: 'jad-square', template: '' }) class MockSquareComponent { }
+import {SvgXComponent} from "../x.component";
+import {SvgOComponent} from "../o.component"; // Adjust the path as needed
 
 describe('BoardComponent', () => {
   let component: BoardComponent;
   let fixture: ComponentFixture<BoardComponent>;
+  let aiOpponent: AiOpponent;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
-        BoardComponent,
-        SquareComponent,
-      ],
-      imports: [SvgXComponent, SvgOComponent],
+      declarations: [BoardComponent, SquareComponent],
+      imports: [SvgXComponent, SvgOComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(BoardComponent);
     component = fixture.componentInstance;
+    aiOpponent = component['ai']; // Access the private ai property
     fixture.detectChanges();
   });
 
@@ -32,7 +29,7 @@ describe('BoardComponent', () => {
   it('should initialize a new game on ngOnInit', () => {
     expect(component.squares).toEqual(Array(9).fill(null));
     expect(component.xIsNext).toBe(true);
-    expect(component.playerWon()).toBeNull();
+    expect(component.winner()).toBeNull();
     expect(component.isBoardDisabled).toBe(false);
   });
 
@@ -52,23 +49,54 @@ describe('BoardComponent', () => {
   it('should not allow moves on occupied squares', () => {
     component.makeMove(0);
     component.makeMove(0);
-    expect(component.squares![0]).toBe('x'); // Should still be 'x'
+    expect(component.squares![0]).toBe('x');
   });
 
   it('should calculate winner correctly', () => {
     component.squares = ['x', 'x', 'x', '', '', '', '', '', ''];
     component.calculateWinner();
-    expect(component.playerWon()).toBe('x');
+    expect(component.winner()).toBe('x');
     expect(component.isBoardDisabled).toBe(true);
   });
 
-  it('should reset game on newGame', () => {
-    component.makeMove(0);
+  it('should calculate draw correctly', () => {
+    component.squares = ['x', 'o', 'x', 'o', 'x', 'o', 'o', 'x', 'o'];
+    component.calculateWinner();
+    expect(component.winner()).toBe('draw');
+    expect(component.isBoardDisabled).toBe(true);
+  });
+
+  it('should reset game on newGame and increment scores', () => {
+    component.squares = ['x', 'x', 'x', '', '', '', '', '', ''];
+    component.calculateWinner();
     component.newGame();
+
     expect(component.squares).toEqual(Array(9).fill(null));
     expect(component.xIsNext).toBe(true);
-    expect(component.playerWon()).toBeNull();
+    expect(component.winner()).toBeNull();
     expect(component.isBoardDisabled).toBe(false);
+    expect(component.playerWon()).toBe(1);
+  });
+
+  it('should increment playerWon on x win and newGame', () => {
+    component.squares = ['x', 'x', 'x', '', '', '', '', '', ''];
+    component.calculateWinner();
+    component.newGame();
+    expect(component.playerWon()).toBe(1);
+  });
+
+  it('should increment cpuWon on o win and newGame', () => {
+    component.squares = ['o', 'o', 'o', '', '', '', '', '', ''];
+    component.calculateWinner();
+    component.newGame();
+    expect(component.cpuWon()).toBe(1);
+  });
+
+  it('should increment ties on draw and newGame', () => {
+    component.squares = ['x', 'o', 'x', 'o', 'x', 'o', 'o', 'x', 'o'];
+    component.calculateWinner();
+    component.newGame();
+    expect(component.ties()).toBe(1);
   });
 
   it('should render the squares', () => {
@@ -94,4 +122,18 @@ describe('BoardComponent', () => {
     expect(compiled.querySelector('svg-o')).toBeTruthy();
   });
 
+  it('should render score cards', () => {
+    const compiled = fixture.nativeElement;
+    expect(compiled.querySelectorAll('.card').length).toBe(3);
+  });
+
+  it('should render score values', () => {
+    component.squares = ['x', 'x', 'x', '', '', '', '', '', ''];
+    component.calculateWinner();
+    component.newGame();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement;
+    expect(compiled.querySelector('.card:nth-child(1) p.font-bold')?.textContent).toBe('1');
+  });
 });
