@@ -1,4 +1,5 @@
 import {Component, OnInit, signal} from '@angular/core';
+import {AiOpponent} from "../ai/ai-opponent";
 
 @Component({
     selector: 'jad-board',
@@ -69,8 +70,12 @@ export class BoardComponent implements OnInit {
   squares: string[] | undefined;
   xIsNext: boolean | undefined;
   isBoardDisabled = false;
+  ai: AiOpponent;
+  aiRandomness = 0.2;
 
-  constructor() {}
+  constructor() {
+    this.ai = new AiOpponent('o', 'x');
+  }
 
   ngOnInit() {
     this.newGame();
@@ -98,9 +103,21 @@ export class BoardComponent implements OnInit {
     }
 
     this.calculateWinner();
+    if (!this.isBoardDisabled && this.player === 'o') {
+      setTimeout(() => this.aiMove(), 500);
+    }
   }
 
-  calculateWinner() {
+  aiMove() {
+    if (this.squares) {
+      const bestMove = this.ai.getBestMoveWithRandomness(this.squares, this.aiRandomness, this.calculateWinner.bind(this));
+      if (bestMove !== null) {
+        this.makeMove(bestMove);
+      }
+    }
+  }
+
+  calculateWinner(): string | null {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -123,6 +140,7 @@ export class BoardComponent implements OnInit {
       ) {
         this.playerWon.set(this.squares[a]);
         this.isBoardDisabled = true;
+        return this.squares[a];
       }
     }
     return null;
