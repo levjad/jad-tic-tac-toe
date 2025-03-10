@@ -55,7 +55,6 @@ export class AiOpponent {
   }
 
   getRandomMove(board: string[]): number | null {
-    console.log('### random move', board);
     const emptySquares = board.reduce((acc, square, index) => {
       if (!square) {
         acc.push(index);
