@@ -54,8 +54,8 @@ import {AiOpponent} from "../ai/ai-opponent";
       </section>
       @let winner = this.winner();
       @if (!!winner) {
-        <div>
-          <div role="alert" class="alert">
+        <div class="flex absolute bg-black bg-opacity-25 h-full w-full justify-center items-center">
+          <div role="alert" class="alert w-48">
             <span class="flex gap-2 justify-center items-center">
                 @if (winner === 'x') {
                   <svg-x [width]="15" [height]="15"/>
