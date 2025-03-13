@@ -4,3 +4,13 @@
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark;
 }
+
+html, body, jad-root {
+  height: 100%;
+}
+
+jad-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
